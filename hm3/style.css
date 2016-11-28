@@ -1,0 +1,27 @@
+/*
+CSS styles for test task
+*/
+
+.workspace {
+    height: 100vh;
+    background-color: #ffffff;
+    position: relative;
+}
+
+.workspace__board {
+    height: inherit;
+}
+
+.dnd_block {
+    position: absolute;
+    cursor: pointer;
+}
+
+.dnd_block__addition {
+    height: 200px;
+    width: 200px;
+    top: 100px;
+    left: 455px;
+    background-color: #4286f4;
+    z-index: 20;
+}
