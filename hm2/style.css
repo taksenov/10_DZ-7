@@ -1,0 +1,47 @@
+/*
+CSS styles for test task
+*/
+
+.accordion__list_main {
+    margin-left: 0;
+    padding-left: 0;
+}
+
+.accordion__list_inner {
+    margin-left: 0;
+    padding-left: 0;
+}
+
+.accordion__list_main_item {
+    list-style-type: none;
+    margin-bottom: 10px;
+}
+
+.accordion__list_inner_item {
+    list-style-type: none;
+}
+
+.accordion__list_item_title {
+    width: 600px;
+    height: 30px;
+    background-color: #c2c6c5;
+}
+
+.accordion__list_item_title--text {
+    margin-right: 15px;
+}
+
+.accordion__list_item_title {
+    cursor: pointer;
+}
+
+.item_title_block {
+    width: 120px;
+    height: 20px;
+    padding-top: 5px;
+    margin: auto;
+}
+
+.accordion__list_inner {
+    display: none;
+}
