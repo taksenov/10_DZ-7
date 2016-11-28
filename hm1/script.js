@@ -4,25 +4,28 @@
 // При нажатии на "удалить", на экран должен быть выведен confirm с текстом
 // "Удалить cookie с именем …?". Вместо … необходимо подставить имя удаляемой cookie.
 // Если пользователь ответил положительно, то соответствующая cookie должна быть удалена.
+// ===
+// Установка HTTP-сервера:
+// 1) npm install http-server -g
+// Запуск HTTP-сервера:
+// 2) http-server hm1 -p 7777 -a 127.0.0.1
+// 3) http://localhost:7777/
+// ===
 
-// todo дописать функцию удаления куки из DOM, id уже забирается как нужно (см функцию deleteCookieFromDOM)
-// todo сделать вывод конферм, на основыании выбора удалять или нет куки из DOM и document
-// todo функция для удаления куки из document уже есть название = deleteCookie
-
-// Установка переменных
+// Установка переменных --------------------------------------------------------
 let cookieTable = document.getElementById('cookieTable');
 let cookieArray = [];
 let cookieNameArray = [];
 let currentCookieObject = {};
-// Установка переменных
+// Установка переменных --------------------------------------------------------
 
-// впомогательные функции
+// впомогательные функции ------------------------------------------------------
 /**
- * Ищет нужный класс для выбранного таргета
- * @param  { DOMTokenList collection of the class attributes} classList коллекция всех классов элемента
- * @param  {string} findedClass искомый класс
- * @return {boolean}             если класс найден то true иначе false
- */
+* Ищет нужный класс для выбранного таргета
+* @param  { DOMTokenList collection of the class attributes} classList коллекция всех классов элемента
+* @param  {string} findedClass искомый класс
+* @return {boolean}             если класс найден то true иначе false
+*/
 function findNeedClassName(classList, findedClass) {
     if ( classList.length !== 0 ) {
         for (let i=0; i < classList.length; i++ ) {
@@ -33,9 +36,9 @@ function findNeedClassName(classList, findedClass) {
     }
     return false;
 } //findNeedClassName
-// впомогательные функции
+// впомогательные функции ------------------------------------------------------
 
-// Подготовительная работа с cookie
+// Подготовительная работа с cookie --------------------------------------------
 function setСookie ( name, value, path ) {
     let cookieString = name + "=" + escape ( value );
     if ( path ) {
@@ -58,43 +61,62 @@ function deleteCookie(name) {
 } // deleteCookie
 
 /**
- * addNewTR функция добавляет строку в таблицу
- * @param {object} content   добавляемый в таблицу контент
- * @param {DOM element} parent    ссылка на родительскую таблицу взятая из DOM
- * @return {boolean} return false;
- */
+* addNewTR функция добавляет строку в таблицу
+* @param {object} content   добавляемый в таблицу контент
+* @param {DOM element} parent    ссылка на родительскую таблицу взятая из DOM
+* @return {boolean} return false;
+*/
 function addNewTR(content, parent) {
     let tBody = parent.tBodies[0];
     var newTR = document.createElement('tr');
-    newTR.innerHTML =     `<td>
-            ${content.cookieName}
-        </td>
-        <td>
-            ${content.cookieValue}
-        </td>
-        <td>
-            <button class="btn btn-default deleteCookieBtn" id="${content.cookieName}">
-                Delete
-            </button>
-        </td>
-        `;
+    newTR.innerHTML =  `<td>
+                            ${content.cookieName}
+                        </td>
+                        <td>
+                            ${content.cookieValue}
+                        </td>
+                        <td>
+                            <button class="btn btn-default deleteCookieBtn" id="${content.cookieName}">
+                                Delete
+                                </button>
+                        </td>
+                        `;
     tBody.appendChild(newTR);
     return false;
 } // addNewTR
 
 /**
- * устанавливает значение и имя от куки в объект,
- * применяется для сокращения количества параметров для функции внедрения в DOM TBODY
- * @param {string} name имя куки\
- * @return {object} изменяет значения глобальной переменной объекта, через замыкание
- */
+* устанавливает значение и имя от куки в объект,
+* применяется для сокращения количества параметров для функции внедрения в DOM TBODY
+* @param {string} name имя куки\
+* @return {object} изменяет значения глобальной переменной объекта, через замыкание
+*/
 function setObjectCookie(name) {
     currentCookieObject.cookieName = name;
     currentCookieObject.cookieValue = getCookie(name);
 } //setObjectCookie
-// Подготовительная работа с cookie
+// Подготовительная работа с cookie --------------------------------------------
 
-// Добавить 20 cookie -- синтетический пример
+// обработчики событий ---------------------------------------------------------
+// окончательное удаление куки из DOM и из document.cookie
+function finalDeleteCookie(e) {
+    let element = e.target;
+    let deletedCookieName = element.id;
+    let needClassName = false;
+    needClassName = findNeedClassName(element.classList, 'deleteCookieBtn');
+
+    if ( needClassName && element.tagName === 'BUTTON' ) {
+        let deleteCurrent = confirm(`Удалить cookie с именем ${element.id}?`);
+        if ( deleteCurrent ) {
+            deleteCookie(deletedCookieName);
+            element.parentNode.parentNode.innerHTML = '';
+        }
+        return false;
+    }
+} // finalDeleteCookie
+// обработчики событий ---------------------------------------------------------
+
+// Добавить 20 cookie -- синтетический пример ----------------------------------
 // добавить куки в document
 for (let i=0; i<20; i++) {
     setСookie('cookieName'+i,'cookieValue'+Date.now(),'/');
@@ -113,27 +135,12 @@ for (let i=0; i<cookieNameArray.length; i++) {
     setObjectCookie(cookieNameArray[i]);
     addNewTR(currentCookieObject, cookieTable);
 }
-// Добавить 20 cookie -- синтетический пример
+// Добавить 20 cookie -- синтетический пример ----------------------------------
 
-// обработка события удаления куки из таблицы и из документа
-// обработчик удаления текущей куки из DOM
-function deleteCookieFromDOM(e) {
-    let element = e.target;
-    let needClassName = false;
-    needClassName = findNeedClassName(element.classList, 'deleteCookieBtn');
-
-    if ( needClassName && element.tagName === 'BUTTON' ) {
-        console.log('Id = ', element.id);
-    }
-} // deleteCookieFromDOM
-
+// обработка события удаления куки из таблицы и из документа -------------------
 // удаление куки через делегирование
 cookieTable.addEventListener(
     'click',
-    (e) => { deleteCookieFromDOM(e) }
+    (e) => { finalDeleteCookie(e) }
 );
-// обработка события удаления куки из таблицы и из документа
-
-// console.log(cookieNameArray);
-// console.log('---');
-// console.log(getCookie(cookieNameArray[1]));
+// обработка события удаления куки из таблицы и из документа -------------------
