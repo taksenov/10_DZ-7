@@ -120,7 +120,6 @@ function addNewTR(content, parent) {
 * @param {string} expires  срок жизни куки в днях
 * @return {object} currentCookieObject меняется через замыкание
 */
-// todo изменить поведение устанавливает знвчяения из формы ввода!
 function setObjectCookie(name, value, expires) {
     currentCookieObject.cookieName = name;
     currentCookieObject.cookieValue = value;
@@ -147,22 +146,30 @@ function finalDeleteCookie(e) {
 } // finalDeleteCookie
 // добавление куки на страницу(DOM) и в document.cookie из формы
 function addNewCookieFromForm(e, name, value, expires) {
+    let expiresNum = +expires;
+    return new Promise(( resolve, reject) => {
+        if ( name && value && expires && isNaN(expiresNum) ) {
+            let changeeCurrent = confirm(`В поле Expires (Days) не число. Если продолжить, то cookie будет действовать только в рамках текущей сессии. Можно выполнить отмену и откорректировать значение.`);
+            if ( !changeeCurrent ) {
+                reject();
+            } else {
+                setObjectCookie(name, value, expires);
+                addNewTR(currentCookieObject, cookieTable);
+                setСookie(name,value,expires,'/');
+                resolve();
+            }
 
-    if () {
-        //todo вывести предупреждение, что в поле expires не число и куки будет добалена только сессионнная
-    }
-    if ( !name || !value || !expires ) {
-        alert('Необходимо заполнить все поля формы!');
-        return false;
-    } else {
-        setObjectCookie(name, value, expires);
-        addNewTR(currentCookieObject, cookieTable);
-        setСookie(name,value,expires,'/');
-        cookieInputName.value = '';
-        cookieInputValue.value = '';
-        cookieInputExpires.value = '';
-    }
-    return true;
+        } else if ( !name || !value || !expires ) {
+            alert('Необходимо заполнить все поля формы!');
+            reject();
+        } else {
+            setObjectCookie(name, value, expires);
+            addNewTR(currentCookieObject, cookieTable);
+            setСookie(name,value,expires,'/');
+            resolve();
+        }
+    });
+
 } // addNewCookieFromForm
 // обработчики событий ---------------------------------------------------------
 
@@ -174,6 +181,14 @@ cookieTable.addEventListener(
 );
 addNewCookieBtn.addEventListener(
     'click',
-    (e) => { addNewCookieFromForm(e, cookieInputName.value, cookieInputValue.value, cookieInputExpires.value) }
+    (e) => { addNewCookieFromForm(e, cookieInputName.value, cookieInputValue.value, cookieInputExpires.value)
+                .then(
+                    () => {
+                        cookieInputName.value = '';
+                        cookieInputValue.value = '';
+                        cookieInputExpires.value = '';
+                    }
+                )
+            }
 );
 // обработка событий на странице -----------------------------------------------
