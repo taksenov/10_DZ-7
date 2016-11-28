@@ -18,6 +18,8 @@
 // ===
 
 let addNewDivBtn = document.getElementById('add_new_div_btn');
+let saveDivsInCookieBtn = document.getElementById('saveDivsInCookie');
+let restoreDivsFromCookieBtn = document.getElementById('restoreDivsFromCookie');
 let parentDndBlock = document.getElementById('workspace__board_id');
 let minWidth = 50;
 let maxWidth = 250;
@@ -77,69 +79,100 @@ function getRandomHexColor() {
 } // getRandomHexColor
 // support functions
 
+// Подготовительная работа с cookie --------------------------------------------
+function setСookie ( name, value, expires, path ) {
+    let cookieString = name + '=' + escape ( value );
+    if ( typeof expires === 'string' ) {
+        expires = +expires; //convert from string to number
+    }
+    if (typeof expires === 'number' && expires) {
+        let day = new Date();
+        day.setDate(day.getDate() + expires);
+        expires = day;
+        cookieString += "; expires=" + expires;
+    }
+    if ( path ) {
+        cookieString += "; path=" + escape ( path );
+    }
+    document.cookie = cookieString;
+} // setСookie
+
+function getCookie(name) {
+    let matches = document.cookie.match(new RegExp(
+        "(?:^|; )" + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + "=([^;]*)"
+    ));
+    return matches ? decodeURIComponent(matches[1]) : undefined;
+} // getCookie
+
+function deleteCookie(name) {
+    let cookieDate = new Date ( );
+    cookieDate.setTime ( cookieDate.getTime() - 1 );
+    document.cookie = name += "=; expires=" + cookieDate.toGMTString();
+} // deleteCookie
+
 // handler functions
 function showShadows(e) {
-    // let _this = this;
-    let _this = e.target;
+    // let element = this;
+    let element = e.target;
     let needClassName = false;
-    needClassName = findNeedClassName(_this.classList, 'dnd_block');
-    if ( needClassName && _this.tagName === 'DIV' ) {
-        _this.style.WebkitBoxShadow = '0px 0px 44px 10px rgba(71,70,71,0.5)';
-        _this.style.MozBoxShadow = '0px 0px 44px 10px rgba(71,70,71,0.5)';
-        _this.style.boxShadow = '0px 0px 44px 10px rgba(71,70,71,0.5)';
+    needClassName = findNeedClassName(element.classList, 'dnd_block');
+    if ( needClassName && element.tagName === 'DIV' ) {
+        element.style.WebkitBoxShadow = '0px 0px 44px 10px rgba(71,70,71,0.5)';
+        element.style.MozBoxShadow = '0px 0px 44px 10px rgba(71,70,71,0.5)';
+        element.style.boxShadow = '0px 0px 44px 10px rgba(71,70,71,0.5)';
     }
 } // showShadows
 
 function unShowShadows(e) {
-    // let _this = this;
-    let _this = e.target;
+    // let element = this;
+    let element = e.target;
     let needClassName = false;
-    needClassName = findNeedClassName(_this.classList, 'dnd_block');
-    // console.log('tagName',_this.tagName);
-    // console.log('className',_this.className);
+    needClassName = findNeedClassName(element.classList, 'dnd_block');
+    // console.log('tagName',element.tagName);
+    // console.log('className',element.className);
 
-    if ( needClassName && _this.tagName === 'DIV' ) {
-        _this.style.WebkitBoxShadow = '';
-        _this.style.MozBoxShadow = '';
-        _this.style.boxShadow = '';
+    if ( needClassName && element.tagName === 'DIV' ) {
+        element.style.WebkitBoxShadow = '';
+        element.style.MozBoxShadow = '';
+        element.style.boxShadow = '';
     }
 } // unShowShadows
 
 function dragAndDropBlock(e, parent) {
 
     // Закешируем таргет в перменную
-    let _this = e.target;
+    let element = e.target;
     let needClassName = false;
-    needClassName = findNeedClassName(_this.classList, 'dnd_block');
+    needClassName = findNeedClassName(element.classList, 'dnd_block');
 
     // Основное условие при котором отработает аккордион
-    if ( needClassName && _this.tagName === 'DIV' ) {
-        let coords = getCoords(_this);
+    if ( needClassName && element.tagName === 'DIV' ) {
+        let coords = getCoords(element);
         let shiftX = e.pageX - coords.left;
         let shiftY = e.pageY - coords.top;
 
-        _this.style.position = 'absolute';
+        element.style.position = 'absolute';
 
-        parent.appendChild(_this);
+        parent.appendChild(element);
         // moveAt(e);
-        moveAt(_this);
+        moveAt(element);
 
-        _this.style.zIndex = 1000; // над другими элементами
+        element.style.zIndex = 1000; // над другими элементами
 
         function moveAt(e) {
-            _this.style.left = e.pageX - shiftX + 'px';
-            _this.style.top = e.pageY - shiftY + 'px';
+            element.style.left = e.pageX - shiftX + 'px';
+            element.style.top = e.pageY - shiftY + 'px';
         }
 
         document.onmousemove = function(e) {
             moveAt(e);
         };
 
-        _this.onmouseup = function() {
+        element.onmouseup = function() {
             document.onmousemove = null;
-            _this.onmouseup = null;
+            element.onmouseup = null;
         };
-        _this.ondragstart = function() {
+        element.ondragstart = function() {
             return false;
         };
     }
@@ -148,7 +181,7 @@ function dragAndDropBlock(e, parent) {
 } //dragAndDropBlock
 
 function addNewDiv(e, parent) {
-    let _this = this;
+    let element = this;
     let newDiv = document.createElement('div');
     newDiv.className = 'dnd_block';
     newDiv.style.height = getRandomInt(minHeigth, maxHeigth) + 'px';
@@ -160,6 +193,16 @@ function addNewDiv(e, parent) {
     parent.appendChild(newDiv);
 } // addNewDiv
 
+function saveDivsToCookie(e, parent) {
+    setСookie ( 'divs', parent.innerHTML, 5, '/' );
+} // saveDivsToCookie
+
+function restoreDivsFromCookie(e, parent) {
+    parent.innerHTML = '';
+    parent.innerHTML = getCookie('divs');
+    deleteCookie('divs');
+} // restoreDivsFromCookie
+
 // handler functions
 
 // event listeners
@@ -167,4 +210,7 @@ parentDndBlock.addEventListener('mousedown',function(e) { dragAndDropBlock(e, pa
 parentDndBlock.addEventListener('mouseover',showShadows);
 parentDndBlock.addEventListener('mouseout',unShowShadows);
 addNewDivBtn.addEventListener('click',function(e) { addNewDiv(e, parentDndBlock) });
+saveDivsInCookieBtn.addEventListener('click', (e)=>{saveDivsToCookie(e, parentDndBlock)});
+restoreDivsFromCookieBtn.addEventListener('click', (e)=>{restoreDivsFromCookie(e, parentDndBlock)});
+
 // event listeners
