@@ -32,6 +32,8 @@ let cookieInputName = document.getElementById('cookieInputName')
 let cookieInputValue = document.getElementById('cookieInputValue')
 let cookieInputExpires = document.getElementById('cookieInputExpires')
 let currentCookieObject = {};
+let cookieArray = [];
+let cookieNameArray = [];
 // Установка переменных --------------------------------------------------------
 
 // впомогательные функции ------------------------------------------------------
@@ -126,6 +128,22 @@ function setObjectCookie(name, value, expires) {
     currentCookieObject.cookieExpires = expires;
 } //setObjectCookie
 // Подготовительная работа с cookie --------------------------------------------
+
+// вывести все куки, что были внутри хранилища куки браузера на страницу -------
+// создать массив со всеми куками документа
+cookieArray = document.cookie.split('; ');
+
+// наполнить массив только именами всех куки
+for (let i=0; i<cookieArray.length; i++) {
+    cookieNameArray[i] = cookieArray[i].substring(cookieArray[i], cookieArray[i].indexOf('='));
+}
+
+// вставить все куки из document в DOM
+for (let i=0; i<cookieNameArray.length; i++) {
+    setObjectCookie(cookieNameArray[i]);
+    addNewTR(currentCookieObject, cookieTable);
+}
+// вывести все куки, что были внутри хранилища куки браузера на страницу -------
 
 // обработчики событий ---------------------------------------------------------
 // окончательное удаление куки из DOM и из document.cookie
